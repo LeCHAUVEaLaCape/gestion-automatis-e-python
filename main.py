@@ -1,57 +1,30 @@
 import os
-import shutil
 from ftplib import FTP
 
-# Navigation dans l'arborescence des répertoires
-def navigate_directory(path):
-    for root, dirs, files in os.walk(path):
-        for name in files:
-            print(os.path.join(root, name))
-        for name in dirs:
-            print(os.path.join(root, name))
+class FileManager:
+    def __init__(self, ftp_host, ftp_user, ftp_password):
+        self.ftp = FTP(ftp_host)
+        self.ftp.login(ftp_user, ftp_password)
 
-# Changement de répertoire
-def change_directory(path):
-    os.chdir(path)
+    def navigate_directory(self, path):
+        # Naviguer dans un répertoire
+        for root, dirs, files in os.walk(path):
+            for name in files:
+                print(os.path.join(root, name))
+            for name in dirs:
+                print(os.path.join(root, name))
 
-# Liste des fichiers et répertoires
-def list_directory(path):
-    return os.listdir(path)
+    def change_directory(self, path):
+        # Changer de répertoire
+        os.chdir(path)
 
-# Renommage d'un fichier ou d'un répertoire
-def rename(old_name, new_name):
-    os.rename(old_name, new_name)
+    def upload_file(self, file, remote_directory):
+        # Upload a file to the FTP server
+        with open(file, 'rb') as f:
+            self.ftp.storbinary('STOR %s' % os.path.join(remote_directory, os.path.basename(file)), f)
 
-# Ajout d'un nouveau répertoire
-def add_directory(path):
-    os.mkdir(path)
-
-# Copie d'un fichier ou d'un répertoire
-def copy(source, destination):
-    if os.path.isdir(source):
-        shutil.copytree(source, destination)
-    else:
-        shutil.copy2(source, destination)
-
-# Déplacement d'un fichier ou d'un répertoire
-def move(source, destination):
-    shutil.move(source, destination)
-
-# Suppression d'un fichier ou d'un répertoire
-def delete(path):
-    if os.path.isdir(path):
-        shutil.rmtree(path)
-    else:
-        os.remove(path)
-
-# Connexion au serveur FTP et sauvegarde des fichiers
-def ftp_backup(host, username, password, source, destination):
-    ftp = FTP(host)
-    ftp.login(user=username, passwd=password)
-    with open(source, 'rb') as file:
-        ftp.storbinary('STOR ' + destination, file)
-
-# Ajustez les valeurs pour correspondre à votre environnement
-ftp_backup('ftp.example.com', 'username', 'password', 'C:/local/path', '/remote/path')
-
-# etc...
+# Test
+file_manager = FileManager('ftp.yourserver.com', 'username', 'password')
+file_manager.navigate_directory('/home/user/test')
+file_manager.change_directory('/home/user/test/new_directory')
+file_manager.upload_file('/home/user/test/file.txt', '/remote/directory')
