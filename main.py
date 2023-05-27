@@ -17,13 +17,6 @@ class FileManager:
             logging.error("Échec de la connexion FTP. Veuillez vérifier votre nom d'utilisateur et votre mot de passe.")
             raise e
 
-    def navigate_directory(self, path):
-        for root, dirs, files in os.walk(path):
-            for name in files:
-                logging.info(f"Fichier trouvé : {os.path.join(root, name)}")
-            for name in dirs:
-                logging.info(f"Répertoire trouvé : {os.path.join(root, name)}")
-
     def upload_file(self, file, remote_directory):
         with open(file, 'rb') as f:
             try:
@@ -38,18 +31,17 @@ class FileManager:
             self.ftp.mkd(directory)
             logging.info(f"Répertoire créé avec succès : {directory}")
         except error_perm as e:
-            logging.error(f"Échec de la création du répertoire : {directory}. Il se peut qu'il existe déjà, ou que vous n'ayez pas la permission de le créer.")
-            raise e
+            logging.info(f"Répertoire {directory} existant déjà, aucune action nécessaire.")
 
     def upload_directory(self, local_directory, remote_directory):
         for root, dirs, files in os.walk(local_directory):
             for dir in dirs:
-                self.create_remote_directory(os.path.join(remote_directory, dir))
+                remote_dir = os.path.join(remote_directory, os.path.relpath(root, local_directory), dir)
+                self.create_remote_directory(remote_dir)
             for file in files:
-                self.upload_file(os.path.join(root, file), os.path.join(remote_directory, os.path.relpath(root, local_directory)))
+                remote_dir = os.path.join(remote_directory, os.path.relpath(root, local_directory))
+                self.upload_file(os.path.join(root, file), remote_dir)
 
-# Test
 username = input("Entrez votre nom d'utilisateur: ")
 file_manager = FileManager('localhost', username)
-file_manager.navigate_directory('/home/test/test_dir')
 file_manager.upload_directory('/home/test/test_dir', '/srv/files/ftp')
