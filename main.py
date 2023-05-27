@@ -2,9 +2,9 @@ import os
 from ftplib import FTP
 
 class FileManager:
-    def __init__(self, ftp_host, ftp_user, ftp_password):
+    def __init__(self, ftp_host):
         self.ftp = FTP(ftp_host)
-        self.ftp.login(ftp_user, ftp_password)
+        self.ftp.login()
 
     def navigate_directory(self, path):
         # Naviguer dans un répertoire
@@ -24,7 +24,7 @@ class FileManager:
             self.ftp.storbinary('STOR %s' % os.path.join(remote_directory, os.path.basename(file)), f)
 
 # Test
-file_manager = FileManager('ftp.yourserver.com', 'username', 'password')
+file_manager = FileManager('localhost')
 file_manager.navigate_directory('/home/user/test')
 file_manager.change_directory('/home/user/test/new_directory')
 file_manager.upload_file('/home/user/test/file.txt', '/remote/directory')
